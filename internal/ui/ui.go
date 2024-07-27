@@ -20,16 +20,19 @@ type TodoItem struct {
 }
 
 type Model struct {
-	ToDos     []TodoItem
-	choices   []string
-	cursor    int
-	ViewState int
+	ToDos       []TodoItem
+	choices     []string
+	cursor      int
+	ViewState   int
+	CurrentTodo TodoItem
+	conn        *pgx.Conn
 }
 
 const (
 	ViewSelection int = iota
 	ViewAdd
 	ViewList
+	ViewTodo
 )
 
 // system level config options should be entry view ie on run come to add or list
@@ -37,6 +40,12 @@ const (
 
 func (m Model) Init() tea.Cmd {
 	return nil
+}
+
+func (m Model) Close() {
+	if m.conn != nil {
+		m.conn.Close(context.Background())
+	}
 }
 
 func startPostgresContainer() error {
@@ -66,7 +75,6 @@ func InitialModel() Model {
 		}
 	}
 
-	defer conn.Close(context.Background())
 	fmt.Println("Connected to the database!")
 
 	sql := `SELECT * FROM todos`
@@ -80,7 +88,7 @@ func InitialModel() Model {
 
 	for rows.Next() {
 		var todo TodoItem
-		err := rows.Scan(&todo.id, &todo.title, &todo.created, &todo.description, &todo.due)
+		err := rows.Scan(&todo.id, &todo.title, &todo.description, &todo.created, &todo.due)
 		if err != nil {
 			panic(err)
 		}
@@ -90,5 +98,6 @@ func InitialModel() Model {
 	return Model{
 		choices: []string{"add", "list"},
 		ToDos:   todos,
+		conn:    conn,
 	}
 }

@@ -1,6 +1,8 @@
 package ui
 
-import "fmt"
+import (
+	"fmt"
+)
 
 func (m Model) viewSelection() string {
 	s := "Todo TUI app:\n\n"
@@ -35,5 +37,21 @@ func (m Model) viewList() string {
 	}
 
 	s += "\nPress esc to go back.\n"
+	return s
+}
+
+func (m Model) viewToDo() string {
+	var s string
+
+	s += fmt.Sprintf(
+		"Title: %s\n\nDescription:\n%s\n\nDue: %s\nCreated: %s",
+		m.CurrentTodo.title,
+		m.CurrentTodo.description,
+		m.CurrentTodo.due,
+		m.CurrentTodo.created,
+	)
+
+	s += "\n\nPress ctrl+d to delete"
+
 	return s
 }

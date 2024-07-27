@@ -6,9 +6,10 @@ func (m Model) View() string {
 		return m.viewSelection()
 	case ViewAdd:
 		return m.viewAdd()
-
 	case ViewList:
 		return m.viewList()
+	case ViewTodo:
+		return m.viewToDo()
 	default:
 		return "Unknown view"
 	}
