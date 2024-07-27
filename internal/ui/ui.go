@@ -29,7 +29,6 @@ type Model struct {
 const (
 	ViewSelection int = iota
 	ViewAdd
-	ViewDo
 	ViewList
 )
 
@@ -89,7 +88,7 @@ func InitialModel() Model {
 	}
 
 	return Model{
-		choices: []string{"add", "do", "list"},
+		choices: []string{"add", "list"},
 		ToDos:   todos,
 	}
 }

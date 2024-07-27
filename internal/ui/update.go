@@ -29,8 +29,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			case 1:
 				maxLen = 0
 			case 2:
-				maxLen = 0
-			case 3:
 				maxLen = len(m.ToDos) - 1
 			}
 

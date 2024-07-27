@@ -22,10 +22,6 @@ func (m Model) viewAdd() string {
 	return "ViewAdd logic"
 }
 
-func (m Model) viewDo() string {
-	return "ViewDo logic"
-}
-
 func (m Model) viewList() string {
 	s := "To Do Items:\n\n"
 
