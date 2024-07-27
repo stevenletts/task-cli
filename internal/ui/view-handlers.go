@@ -1,6 +1,7 @@
 package ui
 
 import (
+	"context"
 	"fmt"
 )
 
@@ -18,10 +19,6 @@ func (m Model) viewSelection() string {
 	s += "\nPress q to quit.\n"
 
 	return s
-}
-
-func (m Model) viewAdd() string {
-	return "ViewAdd logic"
 }
 
 func (m Model) viewList() string {
@@ -54,4 +51,13 @@ func (m Model) viewToDo() string {
 	s += "\n\nPress ctrl+d to delete"
 
 	return s
+}
+
+func (m AddTodoModel) Save() error {
+	sql := `INSERT INTO todos (title, description, due) VALUES ($1, $2, $3)`
+	_, err := m.conn.Exec(context.Background(), sql, m.Title, m.Description, m.DueDate)
+	if err != nil {
+		return fmt.Errorf("could not save todo item: %w", err)
+	}
+	return nil
 }

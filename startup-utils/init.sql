@@ -13,6 +13,6 @@ CREATE TABLE IF NOT EXISTS todos (
     id SERIAL PRIMARY KEY,
     title TEXT NOT NULL,
     description TEXT,
-    created INT NOT NULL,
-    due INT
+    created TIMESTAMP DEFAULT NOW(),
+    due TEXT 
 );

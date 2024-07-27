@@ -15,7 +15,7 @@ type TodoItem struct {
 	id          int
 	title       string
 	description string
-	created     string
+	created     time.Time
 	due         string
 }
 
@@ -25,6 +25,15 @@ type Model struct {
 	cursor      int
 	ViewState   int
 	CurrentTodo TodoItem
+	conn        *pgx.Conn
+	AddModel    AddTodoModel
+}
+
+type AddTodoModel struct {
+	Title       string
+	Description string
+	DueDate     string
+	cursor      int
 	conn        *pgx.Conn
 }
 
@@ -96,8 +105,14 @@ func InitialModel() Model {
 	}
 
 	return Model{
-		choices: []string{"add", "list"},
-		ToDos:   todos,
-		conn:    conn,
+		choices:   []string{"add", "list"},
+		ToDos:     todos,
+		conn:      conn,
+		ViewState: ViewList,
+		AddModel:  AddTodoModel{conn: conn},
 	}
+}
+
+func (m AddTodoModel) Init() tea.Cmd {
+	return nil
 }
