@@ -1,14 +1,22 @@
 package ui
 
 import (
+	"context"
+	"fmt"
+	"log"
+	"os/exec"
+	"time"
+
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/jackc/pgx/v5"
 )
 
 type TodoItem struct {
+	id          int
 	title       string
 	description string
-	created     int
-	due         int
+	created     string
+	due         string
 }
 
 type Model struct {
@@ -29,24 +37,59 @@ const (
 // configure options for displaing in the todo item as in order of deadline, created, description, title or reverse
 
 func (m Model) Init() tea.Cmd {
-	// create the database and the table
-	// connect app to database
-	// fetch titles and deadline and display in view list
-	// on enter into todo item we can display text created
-	//
-	//
-	// docker run --name todo-postgres -e POSTGRES_PASSWORD=password -p 5432:5432 -d --rm postgres:13.0
-	// below will persist
-	// docker run --name my-postgres -e POSTGRES_PASSWORD=mysecretpassword -p 5432:5432 -d -v pgdata:/var/lib/postgresql/data postgres:13.0
-	//
-	// docs for the driver i have installed already
-	// https://github.com/jackc/pgx
+	return nil
+}
 
+func startPostgresContainer() error {
+	cmd := exec.Command("docker-compose", "-f", "startup-utils/docker-compose.yml", "up", "-d", "postgres")
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("error starting PostgreSQL container: %v, output: %s", err, output)
+	}
 	return nil
 }
 
 func InitialModel() Model {
+	connectionString := "postgresql://postgres:password@localhost:5432/todos"
+	conn, err := pgx.Connect(context.Background(), connectionString)
+	if err != nil {
+		log.Println("Unable to connect to database:", err)
+		log.Println("Attempting to start the PostgreSQL container...")
+		if err := startPostgresContainer(); err != nil {
+			log.Fatalf("Failed to start PostgreSQL container: %v", err)
+		}
+
+		time.Sleep(15 * time.Second)
+
+		conn, err = pgx.Connect(context.Background(), connectionString)
+		if err != nil {
+			log.Fatalf("Still unable to connect to database after starting container: %v", err)
+		}
+	}
+
+	defer conn.Close(context.Background())
+	fmt.Println("Connected to the database!")
+
+	sql := `SELECT * FROM todos`
+	rows, err := conn.Query(context.Background(), sql)
+	if err != nil {
+		panic(err)
+	}
+
+	defer rows.Close()
+	var todos []TodoItem
+
+	for rows.Next() {
+		var todo TodoItem
+		err := rows.Scan(&todo.id, &todo.title, &todo.created, &todo.description, &todo.due)
+		if err != nil {
+			panic(err)
+		}
+		todos = append(todos, todo)
+	}
+
 	return Model{
 		choices: []string{"add", "do", "list"},
+		ToDos:   todos,
 	}
 }
